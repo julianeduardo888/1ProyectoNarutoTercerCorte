@@ -1,0 +1,37 @@
+
+services:
+  # Servicio 1: La Base de Datos PostgreSQL
+  db:
+    image: postgres:14-alpine
+    container_name: naruto-db
+    restart: always
+    environment:
+      # Estas variables son leídas por application.properties
+      - POSTGRES_DB=narutodb
+      - DB_USER=admin
+      - DB_PASS=admin
+      - POSTGRES_USER=admin    # Credenciales de superusuario de Postgres
+      - POSTGRES_PASSWORD=admin
+    ports:
+      - "5432:5432" # Expone el puerto de la BD a tu máquina local
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persiste los datos de la BD
+
+  # Servicio 2: Nuestra Aplicación Spring Boot
+  app:
+    container_name: naruto-app
+    # Le decimos a Docker que construya la imagen desde el Dockerfile
+    build: . 
+    restart: on-failure
+    depends_on:
+      - db # No iniciar la app hasta que la BD esté lista
+    ports:
+      - "8080:8080" # Expone el puerto de la app
+    environment:
+      # Pasa las mismas variables de la BD a la aplicación
+      - DB_USER=admin
+      - DB_PASS=admin
+
+# Define el volumen para persistir los datos de la BD
+volumes:
+  postgres_data:

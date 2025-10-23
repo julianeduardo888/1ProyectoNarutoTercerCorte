@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Ninjas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Sistema de Gestión de Ninjas del Hokage</h1>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="card">
+                <h2>Registrar Ninja</h2>
+                <form id="form-ninja">
+                    <label for="ninja-nombre">Nombre:</label>
+                    <input type="text" id="ninja-nombre" required>
+                    
+                    <label for="ninja-rango">Rango:</label>
+                    <select id="ninja-rango">
+                        <option value="GENIN">Genin</option>
+                        <option value="CHUNIN">Chunin</option>
+                        <option value="JONIN">Jonin</option>
+                    </select>
+                    
+                    <label for="ninja-aldea">Aldea (Nombre exacto):</label>
+                    <input type="text" id="ninja-aldea" value="Konoha" required>
+                    
+                    <label for="ninja-ataque">Ataque:</label>
+                    <input type="number" id="ninja-ataque" value="50" required>
+                    
+                    <label for="ninja-defensa">Defensa:</label>
+                    <input type="number" id="ninja-defensa" value="50" required>
+
+                    <label for="ninja-jutsus">Jutsus (separados por coma):</label>
+                    <input type="text" id="ninja-jutsus" value="Rasengan, Chidori">
+                    
+                    <button type="submit">Registrar Ninja</button>
+                </form>
+            </section>
+
+            <section class="card">
+                <h2>Registrar Misión</h2>
+                <form id="form-mision">
+                    <label for="mision-titulo">Título:</label>
+                    <input type="text" id="mision-titulo" required>
+                    
+                    <label for="mision-rango">Rango Misión:</label>
+                    <select id="mision-rango">
+                        <option value="D">D</option>
+                        <option value="C">C</option>
+                        <option value="B">B</option>
+                        <option value="A">A</option>
+                        <option value="S">S</option>
+                    </select>
+
+                    <label for="mision-rango-req">Rango Requerido (Ninja):</label>
+                    <select id="mision-rango-req">
+                        <option value="GENIN">GENIN</option>
+                        <option value="CHUNIN">CHUNIN</option>
+                        <option value="JONIN">JONIN</option>
+                    </select>
+                    
+                    <label for="mision-recompensa">Recompensa:</label>
+                    <input type="number" id="mision-recompensa" value="100" required>
+                    
+                    <button type="submit">Registrar Misión</button>
+                </form>
+            </section>
+        </div>
+
+        <div class="container">
+            <section class="card full-width">
+                <h2>Lista de Misiones y Ninjas Elegibles</h2>
+                <button id="btn-cargar-misiones">Cargar Misiones</button>
+                <div id="mision-list-output">
+                    </div>
+            </section>
+        </div>
+
+        <div class="container">
+            <section class="card">
+                <h2>Reportes</h2>
+                <button id="btn-reporte">Generar Reporte TXT</button>
+                <div class="log-container">
+                    <h3>Reporte Generado:</h3>
+                    <pre id="output-reporte">El reporte aparecerá aquí...</pre>
+                </div>
+                <div class="log-container">
+                    <h3>Log de Acciones:</h3>
+                    <pre id="output-log">Acciones de la API aparecerán aquí...</pre>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
