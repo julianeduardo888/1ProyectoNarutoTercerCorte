@@ -5,25 +5,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const formNinja = document.getElementById('form-ninja');
     const formMision = document.getElementById('form-mision');
     const btnReporte = document.getElementById('btn-reporte');
-    const btnCargarMisiones = document.getElementById('btn-cargar-misiones'); // NUEVO
+    const btnCargarMisiones = document.getElementById('btn-cargar-misiones');
 
     // Referencias a las salidas de log
     const outputLog = document.getElementById('output-log');
     const outputReporte = document.getElementById('output-reporte');
-    const misionListOutput = document.getElementById('mision-list-output'); // NUEVO
+    const misionListOutput = document.getElementById('mision-list-output');
 
     // --- Event Listeners ---
 
     // 1. Registrar Ninja
     formNinja.addEventListener('submit', async (e) => {
         e.preventDefault(); // Evita que el formulario recargue la página
-
         const jutsusInput = document.getElementById('ninja-jutsus').value;
         const jutsusArray = jutsusInput.split(',')
                                      .map(s => s.trim()) // Limpia espacios
                                      .filter(s => s.length > 0); // Filtra vacíos
-
-        // Construye el objeto DTO como lo espera el NinjaService
         const ninjaData = {
             nombre: document.getElementById('ninja-nombre').value,
             rango: document.getElementById('ninja-rango').value,
@@ -32,22 +29,18 @@ document.addEventListener('DOMContentLoaded', () => {
             defensa: parseInt(document.getElementById('ninja-defensa').value),
             nombresJutsu: jutsusArray
         };
-
         logApiCall('Registrando Ninja...', ninjaData);
-
         try {
             const response = await fetch('/api/ninjas', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(ninjaData)
             });
-
-            // Manejo de respuesta HTTP
             if (!response.ok) {
+                // Captura errores del servidor (ej. "Jutsu no encontrado")
                 const errorData = await response.json();
-                throw new Error(errorData.error || 'Error desconocido');
+                throw new Error(errorData.message || 'Error desconocido');
             }
-
             const result = await response.json();
             logApiCall('Respuesta (Ninja):', result);
         } catch (error) {
@@ -58,30 +51,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Registrar Misión
     formMision.addEventListener('submit', async (e) => {
         e.preventDefault();
-
-        // Construye el objeto DTO como lo espera el MisionService
         const misionData = {
             titulo: document.getElementById('mision-titulo').value,
-            descripcion: "Misión registrada desde el frontend.", // Puedes añadir un campo si quieres
+            descripcion: "Misión registrada desde el frontend.", 
             rango: document.getElementById('mision-rango').value,
             recompensa: parseFloat(document.getElementById('mision-recompensa').value),
             rangoRequerido: document.getElementById('mision-rango-req').value
         };
-
         logApiCall('Registrando Misión...', misionData);
-        
         try {
             const response = await fetch('/api/misiones', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(misionData)
             });
-
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || 'Error desconocido');
+                throw new Error(errorData.message || 'Error desconocido');
             }
-
             const result = await response.json();
             logApiCall('Respuesta (Misión):', result);
         } catch (error) {
@@ -89,33 +76,54 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 3. Generar Reporte
+    // 3. Generar Reporte TXT y Descargarlo
     btnReporte.addEventListener('click', async () => {
         logApiCall('Generando Reporte TXT...');
         outputReporte.textContent = 'Cargando...';
         
         try {
             const response = await fetch('/api/reporte/txt');
-            
             if (!response.ok) throw new Error('Error al cargar el reporte');
+            
+            const reportText = await response.text(); // El reporte es texto plano
+            
+            // 1. Mostrar el reporte en la página
+            outputReporte.textContent = reportText;
+            logApiCall('Reporte generado exitosamente. Iniciando descarga...');
 
-            const result = await response.text(); // El reporte es texto plano
-            outputReporte.textContent = result;
-            logApiCall('Reporte generado exitosamente.');
+            // --- INICIO DE LÓGICA DE DESCARGA ---
+
+            // 2. Crear un Blob (un objeto de archivo en memoria)
+            const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+
+            // 3. Crear una URL temporal para ese Blob
+            const url = URL.createObjectURL(blob);
+
+            // 4. Crear un enlace <a> fantasma para iniciar la descarga
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'reporte_ninjas_misiones.txt'; // El nombre del archivo que se descargará
+            document.body.appendChild(a); // El enlace debe estar en la página para funcionar
+            a.click(); // Simular clic
+
+            // 5. Limpiar
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            // --- FIN DE LÓGICA DE DESCARGA ---
+
         } catch (error) {
             logApiCall('Error (Reporte):', error.message);
             outputReporte.textContent = 'Error al generar el reporte.';
         }
     });
 
-    // 4. Cargar Misiones con Ninjas Elegibles (NUEVO)
+    // 4. Cargar Misiones con Ninjas Elegibles (Y ASIGNAR EQUIPOS)
     btnCargarMisiones.addEventListener('click', async () => {
         logApiCall('Cargando misiones con ninjas elegibles...');
         misionListOutput.innerHTML = '<p>Cargando...</p>';
 
         try {
             const response = await fetch('/api/misiones');
-            
             if (!response.ok) throw new Error('Error al cargar misiones');
             
             const misiones = await response.json();
@@ -129,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Construir el HTML
             let html = '';
             for (const mision of misiones) {
-                html += '<div class="mision-card">';
+                html += `<div class="mision-card" id="mision-${mision.id}">`; 
                 html += `<h3>${mision.titulo} [Rango: ${mision.rango}]</h3>`;
                 html += `<p>Recompensa: ${mision.recompensa} | Requiere: <strong>${mision.rangoRequerido}</strong></p>`;
                 
@@ -139,13 +147,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     html += '<li>Ningún ninja registrado cumple el rango.</li>';
                 } else {
                     for (const ninja of mision.ninjasElegibles) {
-                        html += `<li>${ninja.nombre} (Rango: ${ninja.rango})</li>`;
+                        html += `<li>
+                                   <input type="checkbox" class="ninja-selector" data-ninja-id="${ninja.id}">
+                                   <label>${ninja.nombre} (Rango: ${ninja.rango})</label>
+                                 </li>`;
                     }
                 }
                 html += '</ul>';
+                
+                html += `<button class="btn-asignar" data-mision-id="${mision.id}">Asignar Equipo</button>`;
+                html += '<div class="asignar-log"></div>'; 
                 html += '</div>';
             }
-            // Insertar el HTML en la página
             misionListOutput.innerHTML = html;
 
         } catch (error) {
@@ -154,15 +167,74 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Funciones de Utilidad ---
+    // 5. NUEVO EVENT LISTENER (DELEGADO) PARA ASIGNAR
+    misionListOutput.addEventListener('click', async (e) => {
+        // Si el clic NO fue en un botón de asignar, no hacemos nada
+        if (!e.target.classList.contains('btn-asignar')) {
+            return;
+        }
 
-    // Función para mostrar logs en la pantalla
+        e.preventDefault();
+        const misionId = e.target.dataset.misionId;
+        const misionCard = document.getElementById(`mision-${misionId}`);
+        const logElement = misionCard.querySelector('.asignar-log');
+        
+        logElement.textContent = 'Asignando...';
+
+        // 1. Encontrar todos los checkboxes marcados DENTRO de esta tarjeta
+        const ninjaCheckboxes = misionCard.querySelectorAll('.ninja-selector:checked');
+        
+        // 2. Extraer sus IDs
+        const ninjaIds = [];
+        ninjaCheckboxes.forEach(checkbox => {
+            ninjaIds.push(parseInt(checkbox.dataset.ninjaId));
+        });
+
+        if (ninjaIds.length === 0) {
+            logElement.textContent = 'Error: Debes seleccionar al menos un ninja.';
+            return;
+        }
+
+        // 3. Construir el DTO
+        const asignacionData = {
+            misionId: parseInt(misionId),
+            ninjaIds: ninjaIds
+        };
+
+        logApiCall('Asignando equipo...', asignacionData);
+
+        // 4. Enviar la petición
+        try {
+            const response = await fetch('/api/misiones/asignar-equipo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(asignacionData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error del servidor');
+            }
+
+            const result = await response.json();
+            logApiCall('Respuesta (Asignación):', result);
+            logElement.textContent = `¡Equipo asignado! (${result.length} ninjas)`;
+            
+            // Recargamos el reporte TXT para ver los cambios
+            btnReporte.click();
+
+        } catch (error) {
+            logApiCall('Error (Asignación):', error.message);
+            logElement.textContent = `Error: ${error.message}`;
+        }
+    });
+
+    // --- Funciones de Utilidad ---
     function logApiCall(message, data = null) {
         const time = new Date().toLocaleTimeString();
         let logMessage = `[${time}] ${message}\n`;
         
         if (data) {
-            // Si data es un objeto, lo convierte a JSON string. Si ya es un string, lo usa tal cual.
             if (typeof data === 'object') {
                 logMessage += JSON.stringify(data, null, 2) + '\n';
             } else {

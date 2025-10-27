@@ -35,10 +35,16 @@ public class MisionController {
         return misionService.listarMisionesConNinjas();
     }
 
-    // POST /api/misiones/asignar
+    // POST /api/misiones/asignar (Asignación simple, ya no se usa en el frontend)
     @PostMapping("/asignar")
     public AsignacionMision asignarMision(@RequestBody MisionService.AsignacionDTO dto) {
         return misionService.asignarMision(dto);
+    }
+    
+    // NUEVO ENDPOINT PARA ASIGNAR EQUIPO
+    @PostMapping("/asignar-equipo")
+    public List<AsignacionMision> asignarEquipo(@RequestBody MisionService.AsignacionEquipoDTO dto) {
+        return misionService.asignarEquipo(dto);
     }
 
     // PUT /api/misiones/completar/5 (donde 5 es el ID de la ASIGNACION)
