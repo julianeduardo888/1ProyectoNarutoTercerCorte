@@ -1,0 +1,52 @@
+INSTRUCCIONES PARA EJECUTAR EL PROYECTO
+========================================
+
+Hola Profesor,
+
+Este proyecto está 100% "dockerizado". Esto significa que no necesita instalar Java, Maven o Postgres por separado en su máquina. 
+Todo lo necesario está contenido y se ejecutará de forma aislada.
+---
+REQUISITO UNICO
+---
+* Tener **Docker Desktop** instalado y **en ejecución**.
+
+
+---
+PASOS PARA LA EJECUCION
+---
+1.  **INICIAR DOCKER DESKTOP**
+    * Asegúrese de que la aplicación Docker Desktop esté abierta.
+    * **IMPORTANTE**: Espere a que el icono de la ballena en su barra de tareas se ponga verde (o deje de decir "starting"). Si no espera, verá un error de "dockerDesktopLinuxEngine" (el sistema no encuentra el motor de Docker).
+
+2.  **ABRIR UNA TERMINAL**
+    * Abra su terminal preferida (CMD, PowerShell, Git Bash, etc.).
+
+3.  **NAVEGAR A LA CARPETA DEL PROYECTO**
+    * Use el comando `cd` para moverse hasta la carpeta raíz de este proyecto (la misma carpeta donde se encuentra este archivo `INSTRUCCIONES.txt` y el `docker-compose.yml`).
+    * Ejemplo:
+        cd C:\Users\Julia\Downloads\system
+
+4.  **EJECUTAR DOCKER COMPOSE**
+    * Escriba el siguiente comando y presione Enter:
+    
+        docker-compose up --build
+
+5.  **ESPERAR**
+    * La primera vez, Docker descargará las imágenes de Postgres y Maven, y luego compilará el código Java. Esto puede tardar varios minutos.
+    * Sabrá que está listo cuando vea en la terminal los logs de `naruto_app` y un mensaje similar a: `Started SystemApplication in ...`
+
+6.  **ABRIR EL NAVEGADOR**
+    * Una vez que esté listo, abra su navegador web (Chrome, Firefox, etc.) y vaya a la siguiente dirección:
+
+        http://localhost:8080
+
+¡Listo! La interfaz web (`index.html`) cargará y podrá interactuar con la aplicación. El frontend se conectará al backend (Spring Boot) y este a su vez a la base de datos Postgres, todo corriendo dentro de Docker.
+
+
+---
+COMO DETENER LA APLICACION
+---
+1.  Vuelva a la terminal donde ejecutó el comando `docker-compose up`.
+2.  Presione las teclas `Ctrl + C`.
+3.  (Opcional) Para eliminar completamente los contenedores y el volumen de la base de datos, ejecute:
+    docker-compose down -v
